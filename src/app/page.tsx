@@ -1,147 +1,50 @@
-'use client'
-
-import React, { useState, useEffect, useCallback } from 'react'
-import { FamilyMember } from '../types/family'
-import FamilyMemberComponent from '../components/FamilyMember'
-import FamilyMemberModal from '../components/FamilyMemberModal'
-import FamilyTree from '../components/FamilyTree'
-import { getFamilyMembers, addFamilyMember, updateFamilyMember, deleteFamilyMember } from './actions'
+import React from 'react'
+import Link from 'next/link'
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 
-export default function Home() {
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
-  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [modalMode, setModalMode] = useState<'add' | 'edit' | 'addChild' | 'addPartner'>('add')
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-
-  const loadFamilyMembers = useCallback(async () => {
-    try {
-      const members = await getFamilyMembers()
-      setFamilyMembers(members)
-    } catch (error) {
-      console.error('Failed to load family members:', error)
-    }
-  }, [])
-
-  useEffect(() => {
-    loadFamilyMembers()
-  }, [loadFamilyMembers])
-
-  const handleAddMember = useCallback(async (member: Partial<FamilyMember>) => {
-    try {
-      const newMember = await addFamilyMember(member)
-      setFamilyMembers(prevMembers => [...prevMembers, newMember])
-    } catch (error) {
-      console.error('Failed to add family member:', error)
-      alert(`Failed to add family member: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    }
-  }, [])
-
-  const handleUpdateMember = useCallback(async (member: Partial<FamilyMember>) => {
-    try {
-      const updatedMember = await updateFamilyMember(member)
-      setFamilyMembers(prevMembers => 
-        prevMembers.map(m => m.id === updatedMember.id ? updatedMember : m)
-      )
-    } catch (error) {
-      console.error('Failed to update family member:', error)
-      alert(`Failed to update family member: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    }
-  }, [])
-
-  const handleDeleteMember = useCallback(async () => {
-    if (!selectedMember) return
-    try {
-      await deleteFamilyMember(selectedMember.id)
-      setFamilyMembers(prevMembers => prevMembers.filter(m => m.id !== selectedMember.id))
-      setSelectedMember(null)
-      setIsDeleteDialogOpen(false)
-    } catch (error) {
-      console.error('Failed to delete family member:', error)
-      alert(`Failed to delete family member: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    }
-  }, [selectedMember])
-
-  const handleNodeClick = useCallback((memberId: string) => {
-    const member = familyMembers.find(m => m.id === memberId)
-    if (member) {
-      setSelectedMember(member)
-    }
-  }, [familyMembers])
-
-  const handleModalSubmit = useCallback((member: Partial<FamilyMember>) => {
-    if (modalMode === 'edit') {
-      handleUpdateMember(member)
-    } else {
-      handleAddMember(member)
-    }
-    setIsModalOpen(false)
-  }, [modalMode, handleUpdateMember, handleAddMember])
-
+export default function LandingPage() {
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">Family Tree</h1>
-      <div className="mb-4">
-        <FamilyTree members={familyMembers} onNodeClick={handleNodeClick} />
+      <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white">
+        <header className="container mx-auto px-4 py-8">
+          <nav className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-blue-600">FamilyTreeApp</h1>
+            <div>
+              <Link href="/login" passHref>
+                <Button className="mr-2">Login</Button>
+              </Link>
+              <Link href="/register" passHref>
+                <Button>Sign Up</Button>
+              </Link>
+            </div>
+          </nav>
+        </header>
+
+        <main className="container mx-auto px-4 py-16 text-center">
+          <h2 className="text-4xl font-bold mb-4">Discover Your Family History</h2>
+          <p className="text-xl mb-8">Create, explore, and share your family tree with ease.</p>
+          <Link href="/register" passHref>
+            <Button>Get Started</Button>
+          </Link>
+
+          <div className="mt-16 grid md:grid-cols-3 gap-8">
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-xl font-semibold mb-2">Easy to Use</h3>
+              <p>Our intuitive interface makes building your family tree simple and enjoyable.</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-xl font-semibold mb-2">Collaborate</h3>
+              <p>Invite family members to contribute and grow your tree together.</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-xl font-semibold mb-2">Visualize</h3>
+              <p>See your family history come to life with our interactive tree view.</p>
+            </div>
+          </div>
+        </main>
+
+        <footer className="container mx-auto px-4 py-8 text-center text-gray-600">
+          <p>&copy; 2023 FamilyTreeApp. All rights reserved.</p>
+        </footer>
       </div>
-      <Button
-        onClick={() => {
-          setModalMode('add')
-          setIsModalOpen(true)
-        }}
-        className="mb-4"
-      >
-        Add Family Member
-      </Button>
-      {selectedMember && (
-        <div className="mt-4">
-          <h2 className="text-2xl font-bold mb-2">Selected Family Member</h2>
-          <FamilyMemberComponent
-            member={selectedMember}
-            onEdit={() => {
-              setModalMode('edit')
-              setIsModalOpen(true)
-            }}
-            onDelete={() => setIsDeleteDialogOpen(true)}
-            onAddChild={(parentId) => {
-              setModalMode('addChild')
-              setIsModalOpen(true)
-            }}
-            onAddPartner={(memberId) => {
-              setModalMode('addPartner')
-              setIsModalOpen(true)
-            }}
-          />
-        </div>
-      )}
-      <FamilyMemberModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleModalSubmit}
-        member={modalMode === 'edit' ? selectedMember || undefined : undefined}
-        mode={modalMode}
-        parentId={modalMode === 'addChild' ? selectedMember?.id : undefined}
-        partnerId={modalMode === 'addPartner' ? selectedMember?.id : undefined}
-      />
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Family Member</DialogTitle>
-          </DialogHeader>
-          <p>Are you sure you want to delete {selectedMember?.name}?</p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteMember}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
   )
 }
-

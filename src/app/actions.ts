@@ -2,7 +2,7 @@
 
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import { FamilyMember, Family, Plan } from '../types/family'
+import { FamilyMember, Family, Plan } from '@/types/family'
 
 export async function getFamilies(): Promise<Family[]> {
   const supabase = createServerActionClient({ cookies })

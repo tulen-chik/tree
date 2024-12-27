@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Family } from '../types/family'
+import { Family } from '@/types/family'
 
 interface FamiliesState {
   families: Family[]

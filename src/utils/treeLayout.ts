@@ -1,6 +1,6 @@
 import dagre from 'dagre'
 import { Node, Edge } from 'react-flow-renderer'
-import { FamilyMember } from '../types/family'
+import { FamilyMember } from '@/types/family'
 
 const nodeWidth = 172
 const nodeHeight = 36
@@ -24,17 +24,17 @@ export function getLayoutedElements(members: FamilyMember[]): { nodes: Node[], e
 
   // Then, add all edges
   members.forEach((member) => {
-    if (member.parentId) {
+    if (member.parent_id) {
       edges.push({
-        id: `${member.parentId}-${member.id}`,
-        source: member.parentId,
+        id: `${member.parent_id}-${member.id}`,
+        source: member.parent_id,
         target: member.id,
       })
-      graph.setEdge(member.parentId, member.id)
+      graph.setEdge(member.parent_id, member.id)
     }
 
-    if (member.partnerId) {
-      const partnerId = member.partnerId
+    if (member.partner_id) {
+      const partnerId = member.partner_id
       if (!edges.some(e => 
         (e.source === member.id && e.target === partnerId) || 
         (e.source === partnerId && e.target === member.id)

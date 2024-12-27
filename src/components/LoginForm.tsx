@@ -4,7 +4,7 @@ import { supabase } from '../utils/supabase'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 
 export default function LoginForm() {
   const [email, setEmail] = useState('')
@@ -17,18 +17,24 @@ export default function LoginForm() {
     e.preventDefault()
     setLoading(true)
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
       if (error) throw error
       router.push('/dashboard')
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      })
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast({
+          title: "Error",
+          description: error.message,
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: "An unknown error occurred.",
+        })
+      }
     } finally {
       setLoading(false)
     }
